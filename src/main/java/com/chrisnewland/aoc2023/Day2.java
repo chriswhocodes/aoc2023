@@ -29,6 +29,11 @@ public class Day2
 
     public static void main(String[] args) throws IOException
     {
+        new Day2();
+    }
+
+    public Day2() throws IOException
+    {
         List<String> games = Files.readAllLines(Paths.get("src/main/resources/day2.txt"));
 
         int gameNumber = 1;
@@ -56,7 +61,7 @@ public class Day2
         System.out.println("Part 2 (sum of powers): " + powerSum);
     }
 
-    private static List<Sample> getSamples(String line)
+    private List<Sample> getSamples(String line)
     {
         List<Sample> result = new ArrayList<>();
 
@@ -110,7 +115,7 @@ public class Day2
         return result;
     }
 
-    private static boolean possible(List<Sample> samples, int maxRed, int maxGreen, int maxBlue)
+    private boolean possible(List<Sample> samples, int maxRed, int maxGreen, int maxBlue)
     {
         for (Sample sample : samples)
         {
@@ -123,7 +128,7 @@ public class Day2
         return true;
     }
 
-    private static Sample getMinimum(List<Sample> samples)
+    private Sample getMinimum(List<Sample> samples)
     {
         Sample minimum = new Sample(0, 0, 0);
 
