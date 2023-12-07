@@ -147,30 +147,17 @@ public class Day5
 				}
 				else
 				{
-					switch (line)
+					currentMap = switch (line)
 					{
-					case "seed-to-soil map:":
-						currentMap = seedToSoil;
-						break;
-					case "soil-to-fertilizer map:":
-						currentMap = soilToFertilizer;
-						break;
-					case "fertilizer-to-water map:":
-						currentMap = fertilizerToWater;
-						break;
-					case "water-to-light map:":
-						currentMap = waterToLight;
-						break;
-					case "light-to-temperature map:":
-						currentMap = lightToTemperature;
-						break;
-					case "temperature-to-humidity map:":
-						currentMap = temperatureToHumidity;
-						break;
-					case "humidity-to-location map:":
-						currentMap = humidityToLocation;
-						break;
-					}
+						case "seed-to-soil map:" -> seedToSoil;
+						case "soil-to-fertilizer map:" -> soilToFertilizer;
+						case "fertilizer-to-water map:" -> fertilizerToWater;
+						case "water-to-light map:" -> waterToLight;
+						case "light-to-temperature map:" -> lightToTemperature;
+						case "temperature-to-humidity map:" -> temperatureToHumidity;
+						case "humidity-to-location map:" -> humidityToLocation;
+						default -> throw new RuntimeException("Unexpected label");
+					};
 				}
 			}
 			else
