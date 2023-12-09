@@ -111,15 +111,11 @@ public class Day9
 
         parse(lines);
 
-        int length = sequences.size();
-
         long sequenceSumRight = 0;
         long sequenceSumLeft = 0;
 
-        for (int i = 0; i < length; i++)
+        for (Sequence sequence : sequences)
         {
-            Sequence sequence = sequences.get(i);
-
             sequenceSumRight += sequence.getExtrapolatedValueRight();
 
             sequenceSumLeft += sequence.getExtrapolatedValueLeft();
