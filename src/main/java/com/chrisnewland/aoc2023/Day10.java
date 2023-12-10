@@ -40,7 +40,7 @@ public class Day10
         TOPLEFT('F', Set.of(Direction.SOUTH, Direction.EAST)),
         TOPRIGHT('7', Set.of(Direction.SOUTH, Direction.WEST)),
         BOTTOMLEFT('L', Set.of(Direction.NORTH, Direction.EAST)),
-        BOTTOMRIGHT('J', Set.of(Direction.NORTH, Direction.WEST)),
+        BOTTOMRIGHT('J', Set.of(Direction.NORTH, Direction.WEST));
 
         private char symbol;
         private Set<Direction> allowedDirections;
