@@ -42,10 +42,6 @@ public class Day10
         BOTTOMLEFT('L', Set.of(Direction.NORTH, Direction.EAST)),
         BOTTOMRIGHT('J', Set.of(Direction.NORTH, Direction.WEST)),
 
-        OUTSIDE('O', new HashSet<>()),
-        INSIDE('I', new HashSet<>());
-
-
         private char symbol;
         private Set<Direction> allowedDirections;
 
