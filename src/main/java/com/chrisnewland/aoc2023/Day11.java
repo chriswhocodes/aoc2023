@@ -69,19 +69,19 @@ public class Day11
 			return true;
 		}
 
-		private void shiftPointsRight(int columnGE, int amount)
+		private void shiftPointsRight(int columnGT, int amount)
 		{
 			for (Point point : points)
 			{
-				point.shiftRightByAmountIfColumnGE(columnGE, amount);
+				point.shiftRightByAmountIfColumnGT(columnGT, amount);
 			}
 		}
 
-		private void shiftPointsDown(int rowGE, int amount)
+		private void shiftPointsDown(int rowGT, int amount)
 		{
 			for (Point point : points)
 			{
-				point.shiftDownByAmountIfRowGE(rowGE, amount);
+				point.shiftDownByAmountIfRowGT(rowGT, amount);
 			}
 		}
 
@@ -147,17 +147,17 @@ public class Day11
 			this.originalCol = originalCol;
 		}
 
-		public void shiftRightByAmountIfColumnGE(int ifGreaterEqual, int amount)
+		public void shiftRightByAmountIfColumnGT(int ifGreater, int amount)
 		{
-			if (originalCol > ifGreaterEqual)
+			if (originalCol > ifGreater)
 			{
 				this.shiftRight += amount;
 			}
 		}
 
-		public void shiftDownByAmountIfRowGE(int ifGreaterEqual, int amount)
+		public void shiftDownByAmountIfRowGT(int ifGreater, int amount)
 		{
-			if (originalRow > ifGreaterEqual)
+			if (originalRow > ifGreater)
 			{
 				this.shiftDown += amount;
 			}
