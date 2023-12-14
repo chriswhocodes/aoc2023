@@ -2,6 +2,7 @@ package com.chrisnewland.aoc2023;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Day14
@@ -137,9 +138,9 @@ public class Day14
             tiltEast();
         }
 
-        public long calculateLoad()
+        public int calculateLoad()
         {
-            long sum = 0;
+            int sum = 0;
 
             for (int col = 0; col < columns; col++)
             {
@@ -184,7 +185,7 @@ public class Day14
 
     public Day14() throws Exception
     {
-        List<String> lines = Files.readAllLines(Paths.get("src/main/resources/day14.txt.test"));
+        List<String> lines = Files.readAllLines(Paths.get("src/main/resources/day14.txt"));
 
         boolean partOne = false;
 
@@ -192,11 +193,7 @@ public class Day14
         {
             grid = parse(lines);
 
-            System.out.println(grid);
-
             grid.tiltNorth();
-
-            System.out.println(grid);
 
             System.out.println("Part 1 load: " + grid.calculateLoad());
         }
@@ -204,33 +201,69 @@ public class Day14
         {
             grid = parse(lines);
 
-            System.out.println(grid);
+            List<Integer> loads = new ArrayList<>();
 
-            long counter = 0;
-
-            long start = System.currentTimeMillis();
-
-            for (long i = 0; i < 1_000_000_000L; i++)
+            for (long i = 0; i < 10_000L; i++)
             {
-                if (counter++ == 1_000_000)
-                {
-                    System.out.println(i);
-                    counter = 0;
-
-                    long stop = System.currentTimeMillis();
-
-                    System.out.println(stop - start);
-                    start = stop;
-                }
                 grid.cycle();
 
+                int load = grid.calculateLoad();
+
+                loads.add(load);
             }
 
-            System.out.println(grid);
+            int load = findLoadForIteration(loads, 1_000_000_000);
 
-            System.out.println("Part 2 load: " + grid.calculateLoad());
+            System.out.println("Part 2 load: " + load);
         }
     }
+
+    private int findLoadForIteration(List<Integer> loads, int iteration)
+    {
+        int size = loads.size();
+
+        int settle = 1500;
+
+        int pointer1 = settle;
+
+        int load1 = loads.get(pointer1);
+
+        for (int pointer2 = settle + 1; pointer2 < size; pointer2++)
+        {
+            int load2 = loads.get(pointer2);
+
+            if (load2 == load1)
+            {
+                int rangeLength = pointer2 - pointer1;
+
+                boolean foundCycle = true;
+
+                for (int i = 0; i < rangeLength; i++)
+                {
+                    int first = loads.get(pointer1 + i);
+                    int second = loads.get(pointer2 + i);
+                    int third = loads.get(pointer2 + rangeLength + i);
+
+                    if (first != second || first != third)
+                    {
+                        foundCycle = false;
+                        break;
+                    }
+                }
+
+                if (foundCycle)
+                {
+                    int foundPos = (iteration - settle - 1) % rangeLength;
+                    return loads.get(settle + foundPos);
+                }
+            }
+
+            pointer2++;
+        }
+
+        throw new RuntimeException("Could not find cycle");
+    }
+
 
     private Grid parse(List<String> lines) throws Exception
     {
