@@ -1,189 +1,178 @@
 package com.chrisnewland.aoc2023;
 
+import java.awt.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
-public class Day17
+public class Day18
 {
     public static void main(String[] args) throws Exception
     {
-        new Day17();
+        new Day18();
     }
 
-    private enum Direction
+    private static class DigStep
     {
-        FORWARD, LEFT, RIGHT
+        private char direction;
+        private int length;
+        private String colour;
+
+        public DigStep(String line, boolean partOne)
+        {
+            String[] parts = line.replace("(", "").replace(")", "").trim().split("\\s+");
+
+            if (partOne)
+            {
+                direction = parts[0].charAt(0);
+                length = Integer.parseInt(parts[1]);
+                colour = parts[2];
+            }
+            else
+            {
+                length = Integer.parseInt(parts[2].substring(1, 6), 16);
+
+                char dirChar = parts[2].charAt(6);
+
+                direction = switch (dirChar)
+                {
+                    case '0' -> 'R';
+                    case '1' -> 'D';
+                    case '2' -> 'L';
+                    case '3' -> 'U';
+                    default -> throw new RuntimeException("unknown direction");
+                };
+            }
+        }
+
+        @Override
+        public String toString()
+        {
+            return "DigStep{" +
+                    "direction=" + direction +
+                    ", length=" + length +
+                    ", colour='" + colour + '\'' +
+                    '}';
+        }
     }
 
-    private enum Facing
+    private class Dimensions
     {
-        NORTH, SOUTH, EAST, WEST
+        private int minRow;
+        private int maxRow;
+        private int minCol;
+        private int maxCol;
+
+        public void update(int row, int col)
+        {
+            minRow = Math.min(row, minRow);
+            maxRow = Math.max(row, maxRow);
+            minCol = Math.min(col, minCol);
+            maxCol = Math.max(col, maxCol);
+        }
+
+        @Override
+        public String toString()
+        {
+            return "Dimensions{" +
+                    "minRow=" + minRow +
+                    ", maxRow=" + maxRow +
+                    ", minCol=" + minCol +
+                    ", maxCol=" + maxCol +
+                    '}';
+        }
     }
 
     private class Grid
     {
         private int rows;
         private int columns;
-        private int[][] costs;
+        private char[][] locations;
 
         public Grid(int rows, int columns)
         {
             this.rows = rows;
             this.columns = columns;
-            costs = new int[rows][columns];
+
+            System.out.println("Creating grid: " + columns + ", " + rows);
+            locations = new char[rows][columns];
         }
 
-        public void setChar(int col, int row, int cost)
+        public void setChar(int col, int row, char c)
         {
-            costs[row][col] = cost;
+            locations[row][col] = c;
         }
 
-        private int[][] memo;
-
-        public int findLeastCostPath()
+        public void flood(int col, int row)
         {
-            Facing facing = Facing.EAST;
+            Queue<Point> queue = new LinkedList<>();
 
-            memo = new int[this.rows][this.columns];
+            queue.add(new Point(col, row));
 
+            while (!queue.isEmpty())
+            {
+                Point point = queue.remove();
+
+                if (!canFill(point.x, point.y)) // filled since added to queue
+                {
+                    continue;
+                }
+
+                setChar(point.x, point.y, '#');
+
+                if (canFill(point.x, point.y - 1))
+                {
+                    queue.add(new Point(point.x, point.y - 1));
+                }
+
+                if (canFill(point.x, point.y + 1))
+                {
+                    queue.add(new Point(point.x, point.y + 1));
+                }
+
+                if (canFill(point.x + 1, point.y))
+                {
+                    queue.add(new Point(point.x + 1, point.y));
+                }
+
+                if (canFill(point.x - 1, point.y))
+                {
+                    queue.add(new Point(point.x - 1, point.y));
+                }
+            }
+        }
+
+        private boolean canFill(int col, int row)
+        {
+            boolean canFill = false;
+
+            if (col >= 0 && col < columns && row >= 0 && row < rows)
+            {
+                canFill = (locations[row][col] == 0);
+            }
+
+            return canFill;
+        }
+
+        public int countFilled()
+        {
+            int filled = 0;
             for (int row = 0; row < rows; row++)
             {
                 for (int col = 0; col < columns; col++)
                 {
-                    memo[row][col] = -1;
+                    char c = locations[row][col];
+                    if (c == '#')
+                    {
+                        filled++;
+                    }
                 }
             }
 
-            int destRow = rows - 1;
-            int destCol = columns - 1;
-
-//            return minCostDP();
-            return minCostRecursive(facing, destRow, destCol, 0);
-        }
-
-        private int min3(int x, int y, int z)
-        {
-            return Math.min(x, Math.min(y, z));
-        }
-
-        public int minCostDP()
-        {
-            int col;
-            int row;
-            int totalCost[][] = new int[rows][columns];
-
-            totalCost[0][0] = costs[0][0];
-
-// Initializing the first column of the totalCost array
-            for (row = 1; row < rows; row++)
-            {
-                totalCost[row][0] = totalCost[row - 1][0] + costs[row][0];
-            }
-
-// Initializing the first row of the totalCost
-            for (col = 1; col < columns; col++)
-            {
-                totalCost[0][col] = totalCost[0][col - 1] + costs[0][col];
-            }
-
-// Constructing the rest of the totalCost array
-            for (row = 1; row < rows; row++)
-            {
-                for (col = 1; col < columns; col++)
-                {
-                    totalCost[row][col] = min3(totalCost[row - 1][col - 1], totalCost[row - 1][col], totalCost[row][col - 1]) + costs[row][col];
-                }
-            }
-
-            return totalCost[rows - 1][columns - 1];
-        }
-
-        public int minCostRecursive(Facing facing, int row, int col, int forwardCount)
-        {
-            System.out.printf("Facing: %s r:%d c:%d forward:%d\n", facing, row, col, forwardCount);
-
-            if (col < 0 || row < 0 || col >= columns || row >= rows)
-            {
-                System.out.println("oob");
-                return Integer.MAX_VALUE;
-            }
-            else if (row == 0 && col == 0)
-            {
-                return 0;
-            }
-
-            if (memo[row][col] != -1)
-            {
-                System.out.printf("Found cached cost in %d,%d", row, col);
-                return memo[row][col];
-            }
-
-            int costForward = Integer.MAX_VALUE;
-            int costLeft = Integer.MAX_VALUE;
-            int costRight = Integer.MAX_VALUE;
-
-            switch (facing)
-            {
-                case NORTH ->
-                {
-                    if (forwardCount < 2)
-                    {
-                        costForward = minCostRecursive(Facing.NORTH, row - 1, col, ++forwardCount);
-                    }
-                    else
-                    {
-                        System.out.println("too many forward");
-                    }
-                    costLeft = minCostRecursive(Facing.WEST, row, col - 1, 1);
-                    costRight = minCostRecursive(Facing.EAST, row, col + 1, 1);
-                }
-                case SOUTH ->
-                {
-                    if (forwardCount < 2)
-                    {
-                        costForward = minCostRecursive(Facing.SOUTH, row + 1, col, ++forwardCount);
-                    }
-                    else
-                    {
-                        System.out.println("too many forward");
-                    }
-                    costLeft = minCostRecursive(Facing.EAST, row, col + 1, 1);
-                    costRight = minCostRecursive(Facing.WEST, row, col - 1, 1);
-                }
-                case EAST ->
-                {
-                    if (forwardCount < 2)
-                    {
-                        costForward = minCostRecursive(Facing.EAST, row, col + 1, ++forwardCount);
-                    }
-                    else
-                    {
-                        System.out.println("too many forward");
-                    }
-                    costLeft = minCostRecursive(Facing.NORTH, row - 1, col, 1);
-                    costRight = minCostRecursive(Facing.SOUTH, row + 1, col, 1);
-                }
-                case WEST ->
-                {
-                    if (forwardCount < 2)
-                    {
-                        costForward = minCostRecursive(Facing.WEST, row, col - 1, ++forwardCount);
-                    }
-                    else
-                    {
-                        System.out.println("too many forward");
-                    }
-                    costLeft = minCostRecursive(Facing.SOUTH, row + 1, col, 1);
-                    costRight = minCostRecursive(Facing.NORTH, row - 1, col, 1);
-                }
-            }
-
-            System.out.printf("forward: %d, left: %d, right: %d", costForward, costLeft, costRight);
-
-            memo[row][col] = costs[row][col] + min3(costLeft, costForward, costRight);
-
-            return memo[row][col];
+            return filled;
         }
 
         public String toString()
@@ -194,33 +183,99 @@ public class Day17
             {
                 for (int col = 0; col < columns; col++)
                 {
-                    builder.append(costs[row][col]);
+                    char c = locations[row][col];
+                    builder.append(c != 0 ? c : '.');
                 }
                 builder.append("\n");
             }
 
-            builder.append(rows).append(",").append(columns);
             return builder.toString();
         }
     }
 
-    private Grid grid;
-
-    public Day17() throws Exception
+    private class DigPlan
     {
-        List<String> lines = Files.readAllLines(Paths.get("src/main/resources/day17.txt.test"));
+        private Grid grid;
+
+        public DigPlan(List<DigStep> steps)
+        {
+            Dimensions dimensions = new Dimensions();
+
+            int row = 0;
+            int col = 0;
+
+            for (DigStep step : steps)
+            {
+                for (int i = 0; i < step.length; i++)
+                {
+                    switch (step.direction)
+                    {
+                        case 'U' -> row--;
+                        case 'D' -> row++;
+                        case 'L' -> col--;
+                        case 'R' -> col++;
+                    }
+
+                    dimensions.update(row, col);
+                }
+            }
+
+            int rows = 1 + dimensions.maxRow - dimensions.minRow;
+            int cols = 1 + dimensions.maxCol - dimensions.minCol;
+
+            System.out.println(dimensions);
+
+            System.out.printf("%d, %d\n", rows, cols);
+
+            grid = new Grid(rows, cols);
+
+            row = Math.abs(dimensions.minRow);
+            col = Math.abs(dimensions.minCol);
+
+            for (DigStep step : steps)
+            {
+                for (int i = 0; i < step.length; i++)
+                {
+                    switch (step.direction)
+                    {
+                        case 'U' -> row--;
+                        case 'D' -> row++;
+                        case 'L' -> col--;
+                        case 'R' -> col++;
+                    }
+
+                    grid.setChar(col, row, '#');
+                }
+            }
+        }
+    }
+
+    public Day18() throws Exception
+    {
+        List<String> lines = Files.readAllLines(Paths.get("src/main/resources/day18.txt"));
 
         boolean partOne = true;
 
         if (partOne)
         {
-            grid = parse(lines);
+            List<DigStep> steps = parse(lines, partOne);
 
-            System.out.println(grid);
+            for (DigStep step : steps)
+            {
+                System.out.println(step);
+            }
 
-            int lowestCost = grid.findLeastCostPath();
+            DigPlan plan = new DigPlan(steps);
 
-            System.out.println("Part 1 least cost: " + lowestCost);
+            System.out.println(plan.grid);
+
+            plan.grid.flood(235, 3);
+
+            System.out.println(plan.grid);
+
+            int fill = plan.grid.countFilled();
+
+            System.out.println(fill);
         }
         else
         {
@@ -228,26 +283,15 @@ public class Day17
         }
     }
 
-    private Grid parse(List<String> lines)
+    private List<DigStep> parse(List<String> lines, boolean partOne)
     {
-        int rows = lines.size();
-        int cols = lines.get(0).length();
-
-        Grid grid = new Grid(rows, cols);
-
-        int row = 0;
+        List<DigStep> steps = new ArrayList<>();
 
         for (String line : lines)
         {
-            for (int col = 0; col < cols; col++)
-            {
-                char c = line.charAt(col);
-
-                grid.setChar(col, row, Integer.parseInt("" + c));
-            }
-            row++;
+            steps.add(new DigStep(line, partOne));
         }
 
-        return grid;
+        return steps;
     }
 }
