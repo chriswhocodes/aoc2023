@@ -241,7 +241,7 @@ public class Day20
             button.handle(new Message(button, broadcaster, Pulse.LOW));
             MessageBus.process();
         }
-        
+
         System.out.println("Part 1 pulses: " + MessageBus.getPulseProduct());
     }
 
