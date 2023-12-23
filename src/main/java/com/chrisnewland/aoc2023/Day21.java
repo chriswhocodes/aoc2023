@@ -122,23 +122,20 @@ public class Day21
             grid = parse(lines);
 
             System.out.println(grid);
-        }
 
-        Point startPoint = grid.getStartPoint();
+            Point startPoint = grid.getStartPoint();
 
-        Set<Point> starting = Set.of(startPoint);
+            Set<Point> starting = Set.of(startPoint);
+            
+            for (int i = 0; i < 64; i++)
+            {
+                Set<Point> next = grid.getNextSteps(starting);
 
-        int count = 0;
+                starting = next;
 
-        for (int i = 0; i < 64; i++)
-        {
-            Set<Point> next = grid.getNextSteps(starting);
-            System.out.println(next);
-
-            starting = next;
-
-            count = 1 + next.size();
-            System.out.println("Count:" + count);
+                int count = 1 + next.size();
+                System.out.println("Step: " + (i+1) + " Reachable plots: " + count);
+            }
         }
     }
 
