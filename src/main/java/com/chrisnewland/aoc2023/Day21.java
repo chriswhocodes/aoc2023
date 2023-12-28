@@ -126,7 +126,7 @@ public class Day21
             Point startPoint = grid.getStartPoint();
 
             Set<Point> starting = Set.of(startPoint);
-            
+
             for (int i = 0; i < 64; i++)
             {
                 Set<Point> next = grid.getNextSteps(starting);
