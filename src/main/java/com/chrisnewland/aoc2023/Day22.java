@@ -134,8 +134,6 @@ public class Day22
 			{
 				cube.z--;
 			}
-
-			//System.out.println("lowered " + this);
 		}
 
 		@Override
